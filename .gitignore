@@ -1,0 +1,27 @@
+# Node.js dependencies
+node_modules/
+
+# Fichiers générés par les outils de build
+build/
+dist/
+coverage/
+
+# Fichiers de logs
+logs/
+
+# Fichiers de configuration spécifiques à votre environnement de développement
+config/dev.json
+config/dev.js
+
+# Fichiers de sauvegarde automatique
+*.bak
+
+# Fichiers de cache
+.cache/
+
+# Fichiers temporaires
+.tmp/
+
+# Fichiers de sauvegarde de l'éditeur
+.vscode/
+*.swp
