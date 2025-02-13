@@ -2,7 +2,7 @@ const Joi = require('joi');
 const jwt = require('jsonwebtoken');
 const { userModel } = require("../models");
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 const userSchema = Joi.object({
   username: Joi.string()
@@ -30,12 +30,12 @@ const signup = async (req, res) => {
       return res.status(400).json({ error: error.details[0].message });
     }
 
-    await userModel.signup(value);
+    const user = await userModel.signup(value);
 
-    const token = jwt.sign({ username: value.username }, JWT_SECRET, { expiresIn: '24h' });
+    const token = jwt.sign({ username: value.username, type: 'user' }, JWT_SECRET, { expiresIn: '24h' });
 
     res.status(201).json({
-      message: 'User crée',
+      message: 'Utilisateur crée',
       token
     });
   } catch (error) {
@@ -58,7 +58,7 @@ const login = async (req, res) => {
       return res.status(401).json({ error: 'Mauvais identifiants' });
     }
 
-    const token = jwt.sign({ username: user._id }, JWT_SECRET, { expiresIn: '24h' });
+    const token = jwt.sign({ username: user._id, type: user.type }, JWT_SECRET, { expiresIn: '24h' });
 
     res.json({ message: 'Connexion reussie', user, token });
   } catch (error) {

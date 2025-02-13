@@ -47,11 +47,11 @@ async function getAllBooks(req, res) {
   }
 }
 
-async function getByIdBook(req, res) {
-  const id = req.params.id;
+async function getByIsbnBook(req, res) {
+  const isbn = req.params.isbn;
 
   try {
-    const response = await bookModel.getById(id);
+    const response = await bookModel.getByIsbn(isbn);
     
     if (!response || !response.docs || response.docs.length === 0) {
       return res.status(404).json({ error: "Livre non trouvé" });
@@ -81,7 +81,7 @@ async function addBook(req, res) {
 }
 
 async function updateBook(req, res) {
-  const id = req.params.id;
+  const isbn = req.params.isbn;
   const body = req.body;
 
   const { error, value } = bookSchema.validate(body);
@@ -91,7 +91,7 @@ async function updateBook(req, res) {
   }
 
   try {
-    const doc = await bookModel.getById(id);
+    const doc = await bookModel.getByIsbn(isbn);
 
     if (!doc || !doc.docs || doc.docs.length === 0) {
       return res.status(404).json({ error: "Livre non trouvé" });
@@ -99,7 +99,7 @@ async function updateBook(req, res) {
 
     const rev = doc.docs[0]._rev;
 
-    const updatedBook = await bookModel.updateById(id, rev, value);
+    const updatedBook = await bookModel.updateByIsbn(isbn, rev, value);
 
     res.status(200).json({ message: "Livre mis à jour avec succès", livre: updatedBook });
   } catch (error) {
@@ -108,10 +108,10 @@ async function updateBook(req, res) {
 }
 
 async function deleteBook(req, res) {
-  const id = req.params.id;
+  const isbn = req.params.isbn;
 
   try {
-    const doc = await bookModel.getById(id);
+    const doc = await bookModel.getByIsbn(isbn);
 
     if (!doc || !doc.docs || doc.docs.length === 0) {
       return res.status(404).json({ error: "Livre non trouvé" });
@@ -119,7 +119,7 @@ async function deleteBook(req, res) {
 
     const rev = doc.docs[0]._rev;
 
-    await bookModel.deleteById(id, rev);
+    await bookModel.deleteByIsbn(isbn, rev);
 
     res.status(200).json({ message: "Livre supprimé avec succès" });
   } catch (error) {
@@ -127,4 +127,4 @@ async function deleteBook(req, res) {
   }
 }
 
-module.exports = { getAllBooks, getByIdBook, addBook, updateBook, deleteBook };
+module.exports = { getAllBooks, getByIsbnBook, addBook, updateBook, deleteBook };

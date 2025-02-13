@@ -14,16 +14,13 @@ const getAll = async () => {
   }
 };
 
-const getById = async (id) => {
-
+const getByIsbn = async (isbn) => {
   try {
-
     const query = {
-      selector: { "_id": id },
+      selector: { "isbn": isbn },
     }
 
     const response = await dbBook.find(query);
-
     return response;
   } catch (error) {
     return error;
@@ -31,24 +28,36 @@ const getById = async (id) => {
 };
 
 const add = async (book) => {
-
   try {
 
+    const existingBook = await getByIsbn(book.isbn);
+    if (existingBook && existingBook.docs && existingBook.docs.length > 0) {
+      throw new Error('Un livre avec cet ISBN existe déjà');
+    }
+
+    book._id = book.isbn;
     const response = await dbBook.insert(book);
     return response;
   } catch (error) {
+    if (error.message === 'Document update conflict.') {
+      throw new Error('Un livre avec cet ISBN existe déjà');
+    }
     throw new Error("Erreur lors de l'ajout du livre: " + error.message);
   }
 };
 
-const updateById = async (id, rev, updatedBook) => {
+const updateByIsbn = async (isbn, rev, updatedBook) => {
 
   try {
+    if (updatedBook.isbn && updatedBook.isbn !== isbn) {
+      throw new Error("L'ISBN dans le corps de la requête ne correspond pas à l'ISBN dans l'URL");
+    }
 
     const response = await dbBook.insert({
-      _id: id,
+      _id: isbn,
       _rev: rev,
       ...updatedBook,
+      isbn: isbn
     });
     return response;
   } catch (error) {
@@ -56,15 +65,13 @@ const updateById = async (id, rev, updatedBook) => {
   }
 };
 
-const deleteById = async (id, rev) => {
-
+const deleteByIsbn = async (isbn, rev) => {
   try {
-    const response = await dbBook.destroy(id, rev);
-
+    const response = await dbBook.destroy(isbn, rev);
     return response;
   } catch (error) {
-    return error;
+    throw new Error("Erreur lors de la suppression du livre: " + error.message);
   }
 };
 
-module.exports = { getAll, getById, add, deleteById, updateById }
+module.exports = { getAll, getByIsbn, add, deleteByIsbn, updateByIsbn }
