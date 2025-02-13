@@ -6,6 +6,7 @@ const getAll = async () => {
     
     const response = await dbBook.find({
       selector: {},
+      fields: ["title", "author", "publication_year", "language", "summary", "isbn", "page_count", "publisher"],
     });
 
     return response;
@@ -18,6 +19,7 @@ const getByIsbn = async (isbn) => {
   try {
     const query = {
       selector: { "isbn": isbn },
+      fields: ["title", "author", "publication_year", "language", "summary", "isbn", "page_count", "publisher"],
     }
 
     const response = await dbBook.find(query);
