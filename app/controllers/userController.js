@@ -35,8 +35,7 @@ const signup = async (req, res) => {
     const token = jwt.sign({ username: value.username, type: 'user' }, JWT_SECRET, { expiresIn: '24h' });
 
     res.status(201).json({
-      message: 'Utilisateur crée',
-      token
+      message: 'Utilisateur crée'
     });
   } catch (error) {
     if (error.message.includes('existe déja')) {
