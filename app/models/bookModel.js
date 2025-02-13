@@ -5,9 +5,7 @@ const getAll = async () => {
   try {
     
     const response = await dbBook.find({
-      selector: {},
-      fields: ["title", "author", "publication_year", "language", "summary", "isbn", "page_count", "publisher"],
-    });
+      selector: {}    });
 
     return response;
   } catch (error) {
@@ -18,8 +16,7 @@ const getAll = async () => {
 const getByIsbn = async (isbn) => {
   try {
     const query = {
-      selector: { "isbn": isbn },
-      fields: ["title", "author", "publication_year", "language", "summary", "isbn", "page_count", "publisher"],
+      selector: { "isbn": isbn }
     }
 
     const response = await dbBook.find(query);
@@ -48,17 +45,27 @@ const add = async (book) => {
   }
 };
 
-const updateByIsbn = async (isbn, rev, updatedBook) => {
-
+const updateByIsbn = async (id, rev, isbn, updatedBook) => {
   try {
-    if (updatedBook.isbn && updatedBook.isbn !== isbn) {
-      throw new Error("L'ISBN dans le corps de la requête ne correspond pas à l'ISBN dans l'URL");
+
+    const existingBook = await getByIsbn(isbn);
+    if (!existingBook || !existingBook.docs || existingBook.docs.length === 0) {
+      throw new Error("Le livre n'existe pas");
     }
 
+    const currentBook = existingBook.docs[0];
+    
+    if (rev !== currentBook._rev) {
+      throw new Error("Rev obsolete");
+    }
+
+    const { _id, _rev, ...cleanUpdatedBook } = updatedBook;
+
     const response = await dbBook.insert({
-      _id: isbn,
+      _id: id,
       _rev: rev,
-      ...updatedBook,
+      ...currentBook,
+      ...cleanUpdatedBook,
       isbn: isbn
     });
     return response;
@@ -67,9 +74,10 @@ const updateByIsbn = async (isbn, rev, updatedBook) => {
   }
 };
 
-const deleteByIsbn = async (isbn, rev) => {
+const deleteByIsbn = async (id, rev) => {
   try {
-    const response = await dbBook.destroy(isbn, rev);
+    
+    const response = await dbBook.destroy(id, rev);
     return response;
   } catch (error) {
     throw new Error("Erreur lors de la suppression du livre: " + error.message);

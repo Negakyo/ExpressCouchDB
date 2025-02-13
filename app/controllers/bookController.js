@@ -84,7 +84,9 @@ async function updateBook(req, res) {
   const isbn = req.params.isbn;
   const body = req.body;
 
-  const { error, value } = bookSchema.validate(body);
+  const { _id, _rev, ...cleanBody } = body;
+
+  const { error, value } = bookSchema.validate(cleanBody);
 
   if (error) {
     return res.status(400).json({ error: error.details[0].message });
@@ -97,9 +99,9 @@ async function updateBook(req, res) {
       return res.status(404).json({ error: "Livre non trouvé" });
     }
 
-    const rev = doc.docs[0]._rev;
+    const book = doc.docs[0];
 
-    const updatedBook = await bookModel.updateByIsbn(isbn, rev, value);
+    const updatedBook = await bookModel.updateByIsbn(book._id, book._rev, isbn, value);
 
     res.status(200).json({ message: "Livre mis à jour avec succès", livre: updatedBook });
   } catch (error) {
@@ -117,9 +119,9 @@ async function deleteBook(req, res) {
       return res.status(404).json({ error: "Livre non trouvé" });
     }
 
-    const rev = doc.docs[0]._rev;
+    const book = doc.docs[0];
 
-    await bookModel.deleteByIsbn(isbn, rev);
+    await bookModel.deleteByIsbn(book._id, book._rev);
 
     res.status(200).json({ message: "Livre supprimé avec succès" });
   } catch (error) {
